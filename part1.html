@@ -22,6 +22,13 @@
             width: 800,
             height: 600
         },
+        physics: {
+            default: 'arcade',
+            arcade:{
+                gravity:{y: 300},
+                debug: false
+            }
+        },
         scene: {
             preload: init,
             create: rendering,
@@ -44,11 +51,7 @@
     function rendering ()
     {
         this.add.image(400,300,'sky');
-        this.add.image(400,300, 'star');
-        this.add.image(100,100, 'star').setOrigin(0,0);
-        this.add.image(500,200, 'star');
-        this.add.image(250,220, 'star').setOrigin(0,0);
-        this.add.image(370,120, 'star');
+
         /*setOrigin only allows for 4 options:
             (0,0) top left
             (0,1) bottom left
@@ -64,7 +67,26 @@
             (more examples can be found under TRANSFORM)
         */
 
-        alert("RENDERING IS DONE");
+        platforms = this.physics.add.staticGroup();
+
+        platforms.create(600,400,'ground');
+        platforms.create(50,250,'ground');
+        platforms.create(750,220,'ground');
+        platforms.create(400,568,'ground').setScale(2).refreshBody();
+
+        stars = this.physics.add.group();
+        for(let i = 0; i < 16; i++){
+            stars.create(12+ i*50, 50, 'star');
+        }
+
+        this.physics.add.collider(stars, platforms);
+
+        for(let i = 0; i < 16; i++){
+            stars.setBoundY(Phaser.Math.FloatBetween(0.4,0.8));
+        }
+
+
+        //alert("RENDERING IS DONE");
     }
 
     function update ()
