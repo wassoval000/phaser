@@ -33,10 +33,15 @@
             preload: init,
             create: rendering,
             update: update
+        },
+        audio:{
+            disableWebAudio: true
         }
     };
 
     var game = new Phaser.Game(config);
+    var score = 0
+    var scoreText;
 
     function init ()
     {
@@ -44,6 +49,7 @@
         this.load.image('ground', 'assets/platform.png');
         this.load.image('star', 'assets/star.png');
         this.load.image('bomb', 'assets/bomb.png');
+        this.load.audio('pop', 'assets/pop.wav');
         this.load.spritesheet('dude', 'assets/dude.png', {frameWidth: 32, frameHeight: 48});
 
         alert("PRE LOAD IS DONE");
@@ -77,6 +83,7 @@
 
         //stars is a dynamic physics group
         player = this.physics.add.sprite(100,450,'dude');
+        scoreText = this.add.text(16, 550, 'SCORE: 0', {fontSize: '32px', fill:'#000'});
         player.setCollideWorldBounds(true);
         player.setBounce(0.2);
 
@@ -121,9 +128,21 @@
 
         this.physics.add.collider(stars, platforms);
         this.physics.add.collider(player, platforms);
-        this.physics.add.collider(player, stars);
+        this.physics.add.overlap(player, stars, collectStar, null, this);
+
+        //this.physics.add.overlap(object1, object2, callback function, processCallback(true or false), contest of the callback (meaning which object is doing the call function))
 
         cursors = this.input.keyboard.createCursorKeys();
+
+        function collectStar(player, star){
+
+            this.sound.add('pop').play();
+            star.disableBody(true, true);
+
+            score += 100;
+            scoreText.setText("SCORE: " + score);
+
+        }
 
 
         //alert("RENDERING IS DONE");
@@ -143,6 +162,12 @@
         else{
             player.setVelocityX(0);
             player.anims.play('forward',true);
+        }
+
+        if(cursors.up.isDown && player.body.touching.down){
+
+            player.setVelocityY(-330);
+
         }
 
     }
