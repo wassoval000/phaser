@@ -32,7 +32,8 @@
         scene: {
             preload: init,
             create: rendering,
-            update: update
+            update: update,
+            flash: flash
         },
         audio:{
             disableWebAudio: true
@@ -45,11 +46,13 @@
 
     function init ()
     {
+        this.load.image('logo', 'assets/star.png');
         this.load.image('sky', 'assets/sky.png');
         this.load.image('ground', 'assets/platform.png');
         this.load.image('star', 'assets/star.png');
         this.load.image('bomb', 'assets/bomb.png');
         this.load.audio('pop', 'assets/pop.wav');
+        this.load.audio('background', 'assets/caketown.mp3')
         this.load.spritesheet('dude', 'assets/dude.png', {frameWidth: 32, frameHeight: 48});
 
         alert("PRE LOAD IS DONE");
@@ -57,6 +60,10 @@
 
     function rendering ()
     {
+
+        var music = this.sound.add('background');
+        music.play();
+
         this.add.image(400,300,'sky');
 
         /*setOrigin only allows for 4 options:
@@ -105,7 +112,10 @@
             repeat:-1
         })
 
-        stars = this.physics.add.group();/*({
+        stars = this.physics.add.group();
+        bombs = this.physics.add.group();
+        
+        /*({
 
             key: 'star',
             repeat: 11,
@@ -127,8 +137,18 @@
         }
 
         this.physics.add.collider(stars, platforms);
+        this.physics.add.collider(bombs, platforms);
         this.physics.add.collider(player, platforms);
         this.physics.add.overlap(player, stars, collectStar, null, this);
+        this.physics.add.overlap(player, bombs, hitBomb, null, this);
+
+        function hitBomb(player, bomb){
+            this.physics.pause();
+            player.setTint(0xFF00FF);
+            player.anims.play('turn');
+
+            //gameOver = true;
+        }
 
         //this.physics.add.overlap(object1, object2, callback function, processCallback(true or false), contest of the callback (meaning which object is doing the call function))
 
@@ -142,11 +162,40 @@
             score += 100;
             scoreText.setText("SCORE: " + score);
 
+            if(stars.countActive(true) === 0){
+
+                stars.children.iterate(function(child){
+                    child.enableBody(true, child.x, 0, true, true)
+                });
+
+                var bomb = bombs.create(16, 16, 'bomb');
+                bomb.setBounce(0.8);
+                bomb.setCollideWorldBounds(true);
+                bomb.setVelocity(Phaser.Math.Between(-200,200), 20);
+
+            }
+
         }
+
 
 
         //alert("RENDERING IS DONE");
     }
+
+    function flash(){
+            this.cameras.main.on('cameraflashstart', function(cam, fx, duration){
+                var logo = this.add.image(400,200,'logo').setScale(3).setVisible(false);
+            });
+
+            this.cameras.main.on('cameraflashcomplete', function(){
+                logo.setVisible(true);
+            });
+
+            this.input.on('pointerdown', function(){
+                logo.setVisible(false);
+            }, this);
+    }
+
 
     function update ()
     {
