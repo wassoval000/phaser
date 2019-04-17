@@ -32,8 +32,7 @@
         scene: {
             preload: init,
             create: rendering,
-            update: update,
-            flash: flash
+            update: update
         },
         audio:{
             disableWebAudio: true
@@ -46,7 +45,7 @@
 
     function init ()
     {
-        this.load.image('logo', 'assets/star.png');
+        this.load.image('block', 'assets/block.jpg');
         this.load.image('sky', 'assets/sky.png');
         this.load.image('ground', 'assets/platform.png');
         this.load.image('star', 'assets/star.png');
@@ -141,6 +140,7 @@
         this.physics.add.collider(player, platforms);
         this.physics.add.overlap(player, stars, collectStar, null, this);
         this.physics.add.overlap(player, bombs, hitBomb, null, this);
+        //this.physics.add.overlap(block, bombs, destroyBomb, null, this);
 
         function hitBomb(player, bomb){
             this.physics.pause();
@@ -177,23 +177,20 @@
 
         }
 
+        this.input.on('pointerdown', function(pointer){
+
+            this.add.image(pointer.x, pointer.y, 'block').setScale(.08);
+
+        }, this);
+
+        /*function destroyBomb(block, bombs){
+            block.disableBody(true, true);
+            bombs.disableBody(true, true);
+        }*/
+
 
 
         //alert("RENDERING IS DONE");
-    }
-
-    function flash(){
-            this.cameras.main.on('cameraflashstart', function(cam, fx, duration){
-                var logo = this.add.image(400,200,'logo').setScale(3).setVisible(false);
-            });
-
-            this.cameras.main.on('cameraflashcomplete', function(){
-                logo.setVisible(true);
-            });
-
-            this.input.on('pointerdown', function(){
-                logo.setVisible(false);
-            }, this);
     }
 
 
