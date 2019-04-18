@@ -46,6 +46,7 @@
     function init ()
     {
         this.load.image('block', 'assets/block.jpg');
+        this.load.image('explode', 'assets/explosion.png');
         this.load.image('sky', 'assets/sky.png');
         this.load.image('ground', 'assets/platform.png');
         this.load.image('star', 'assets/star.png');
@@ -63,7 +64,7 @@
         var music = this.sound.add('background');
         music.play();
 
-        this.add.image(400,300,'sky');
+        var sky = this.add.image(400,300,'sky');
 
         /*setOrigin only allows for 4 options:
             (0,0) top left
@@ -113,6 +114,7 @@
 
         stars = this.physics.add.group();
         bombs = this.physics.add.group();
+        block = this.physics.add.group();
         
         /*({
 
@@ -138,9 +140,11 @@
         this.physics.add.collider(stars, platforms);
         this.physics.add.collider(bombs, platforms);
         this.physics.add.collider(player, platforms);
+        this.physics.add.collider(block, platforms);
+        this.physics.add.collider(block, block);
         this.physics.add.overlap(player, stars, collectStar, null, this);
         this.physics.add.overlap(player, bombs, hitBomb, null, this);
-        //this.physics.add.overlap(block, bombs, destroyBomb, null, this);
+        this.physics.add.overlap(block, bombs, destroyBomb, null, this);
 
         function hitBomb(player, bomb){
             this.physics.pause();
@@ -158,7 +162,6 @@
 
             this.sound.add('pop').play();
             star.disableBody(true, true);
-
             score += 100;
             scoreText.setText("SCORE: " + score);
 
@@ -177,17 +180,37 @@
 
         }
 
+        var explode = this.add.image(Phaser.Math.Between(0,600), Phaser.Math.Between(0,800), 'explode').setScale(0.2).setVisible(false);
+
+        this.cameras.main.on('cameraflashstart', function(cam, fx, duration){
+            explode.setVisible(true);
+        });
+        
+        this.cameras.main.on('cameraflashcomplete', function(){
+            explode.setVisible(false);
+        });
+
+        this.cameras.main.on('camerashakestart', function(){
+            sky.setVisible(true);
+        });
+
+        this.cameras.main.on('camerashakecomplete', function(){
+            sky.setVisible(true);
+        });
+
         this.input.on('pointerdown', function(pointer){
 
-            this.add.image(pointer.x, pointer.y, 'block').setScale(.08);
+            block.create(pointer.x, pointer.y, 'block').setScale(.08);
 
         }, this);
 
-        /*function destroyBomb(block, bombs){
+
+        function destroyBomb(block, bombs){
             block.disableBody(true, true);
             bombs.disableBody(true, true);
-        }*/
-
+            this.cameras.main.flash();
+            this.cameras.main.shake(500);
+        }
 
 
         //alert("RENDERING IS DONE");
